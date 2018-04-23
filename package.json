@@ -1,6 +1,6 @@
 {
   "name": "check-form-reg",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "Verivy registration fields",
   "main": "index.js",
   "scripts": {
