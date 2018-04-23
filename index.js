@@ -1,5 +1,7 @@
 "use strict";
 
+module.exports = c;
+
 function CheckRegister() {}
 let check = new CheckRegister();
 
@@ -17,6 +19,11 @@ check.password2Error = document.querySelector('#password2Error');
 check.button = document.querySelector('#button');
 check.buttonError = document.querySelector('#buttonError');
 check.minPasswordLength = 6;
+check.callbackSend = function(email, password1, password2){
+    console.log(email);
+    console.log(password1);
+    console.log(password2);
+};
 
 /**
  * Optional variables
@@ -30,29 +37,74 @@ check.passwordErrorMessageIfEmpty = 'Custom empty password message';
 check.passwordsUnmatchMessage = 'Custom passwords no match message';
 
 
-function c()
+function c(check)
 {
+    let pregEmail = /\w+@\w+\.\w+/,
+        pregPass = /\w+/,
+        minLength = check.minPasswordLength,
+        defaultEmptyEmail = 'Please insert your email',
+        defaultEmailError = 'Error email',
+        defaultEmptyPassword = 'Please insert your password',
+        defaultPasswordLengthError = 'Password must be a longer as '+minLength+' symbols',
+        defaultUnmatchError = 'Passwords do not match',
+        defaultPasswordError = 'Password invalid';
+    buttonDisabled(true);
     checkEmail();
     checkPassword1();
     checkPassword2();
+    checkSend(check.button);
 
-    function checkEmail() {
+    function checkSend(input) {
+        document.addEventListener('DOMContentLoaded',function() {
+            input.onclick=clickSend;
+        },false);
+    }
+    function clickSend() {
+        if (check.email.value === ''){
+            check.buttonError.innerText = check.passwordErrorMessageIfEmpty || defaultEmptyEmail;
+        }
+        else if (!check.email.value.match(pregEmail)){
+            check.buttonError.innerText = check.emailError.message || defaultEmailError
+        }
+        else if (check.password1.value === ''){
+            check.buttonError.innerText = check.passwordErrorMessageIfEmpty || defaultEmptyPassword;
+        }
+        else if (!check.password1.value.match(pregPass)){
+            check.buttonError.innerText = check.passwordErrorMessage || defaultPasswordError;
+        }
+        else if (check.password1.value.length <= check.minPasswordLength ){
+            check.buttonError.innerText = check.passwordLengthMessage || defaultPasswordLengthError;
+        }
+        else {
+            check.callbackSend(check.email.value, check.password1.value, check.password2.value);
+        }
+    }
+    function buttonDisabled(bool) {
+        if (bool){
+            check.button.setAttribute('disabled', 'disabled');
+        }
+        else {
+            check.button.removeAttribute("disabled");
+        }
+    }
+    function checkEmail()
+    {
       let input = check.email,
           error = check.emailError,
-          message = check.emailError.message  || 'Error email',
-          preg = /\w+@\w+\.\w+/,
-          messageIfEmpty = check.emailError.messageIfEmpty  || 'Please insert your email';
-      listener(input, error, preg, message, messageIfEmpty);
+          message = check.emailError.message  || defaultEmailError,
+          messageIfEmpty = check.emailError.messageIfEmpty  || defaultEmptyEmail;
+        listener(input, error, pregEmail, message, messageIfEmpty);
+        inputer(input);
     }
 
     function checkPassword1() {
         let input = check.password1,
             error = check.password1Error,
-            message = check.passwordErrorMessage  || 'Password invalid',
-            preg = /\w+/,
-            messageIfEmpty = check.passwordErrorMessageIfEmpty  || 'Please insert your password';
+            message = check.passwordErrorMessage  || defaultPasswordError,
+            messageIfEmpty = check.passwordErrorMessageIfEmpty  || defaultEmptyPassword;
 
-        listener(input, error, preg, message, messageIfEmpty, 1);
+        listener(input, error, pregPass, message, messageIfEmpty, 1);
+        inputer(input);
     }
 
     function checkPassword2() {
@@ -60,9 +112,45 @@ function c()
             error = check.password2Error,
             message = check.passwordErrorMessage  || 'Password invalid',
             preg = /\w+/,
-            messageIfEmpty = check.passwordErrorMessageIfEmpty  || 'Please insert your password';
+            messageIfEmpty = check.passwordErrorMessageIfEmpty  || defaultEmptyPassword;
 
         listener(input, error, preg, message, messageIfEmpty, 2);
+        inputer(input);
+    }
+    function inputer(input)
+    {
+        document.addEventListener('DOMContentLoaded',function() {
+            input.oninput=changeEventInput;
+        },false);
+    }
+    function changeEventInput(event)
+    {
+        if (!event.target.value){
+        }
+        else {
+            if (check.email.value.match(pregEmail)) {
+                if (check.password1Error.innerText === '') {
+                    if (check.password1.value === check.password2.value) {
+                        if (check.password1.value !== '' && check.password2.value !== '') {
+                            buttonDisabled(false);
+                            check.buttonError.innerText = '';
+                        }
+                        else {
+                            buttonDisabled(true);
+                        }
+                    }
+                    else {
+                        buttonDisabled(true);
+                    }
+                }
+                else {
+                    buttonDisabled(true);
+                }
+            }
+            else {
+                buttonDisabled(true);
+            }
+        }
     }
 
     function listener(input, error, preg, message, messageIfEmpty, index = 0) {
@@ -79,12 +167,11 @@ function c()
             }
             else {
                 if (index === 1){
-                    let length = event.target.value.length,
-                        minLength = check.minPasswordLength;
+                    let length = event.target.value.length;
                     if (length <= minLength)
                     {
                         prg = /3443ubercase212/;
-                        msg = check.passwordLengthMessage || 'Password must be a longer as '+minLength+' symbols';
+                        msg = check.passwordLengthMessage || defaultPasswordLengthError;
                     }
                     else {
                         prg = preg;
@@ -95,7 +182,7 @@ function c()
                     if (check.password1.value !== check.password2.value)
                     {
                         prg = /3443ubercase212/;
-                        msg = check.passwordsUnmatchMessage || 'Passwords do not match';
+                        msg = check.passwordsUnmatchMessage || defaultUnmatchError;
                     }
                     else {
                         prg = preg;
