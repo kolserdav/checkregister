@@ -1,6 +1,6 @@
 "use strict";
 
-//module.exports = c;
+module.exports = c;
 
 function CheckRegister() {}
 let check = new CheckRegister();
@@ -43,14 +43,16 @@ check.passwordsUnmatchMessage = 'Custom passwords no match message';
 check.colorErrorMesages = "red";
 
 
-function c()
+function c(check)
 {
     let password2 = null,
+        passwordError = null,
         emailErrorOld = check.emailError.innerText,
         passwordErrorOld = check.passwordError.innerText,
         passwordColorOld = check.passwordError.style.color,
         buttonErrorOld = check.buttonError.innerText,
         checkbox = null,
+        checked = null,
         pregEmail = /\w+@\w+\.\w+/,
         pregPass = /\w+/,
         minLength = check.minPasswordLength,
@@ -69,6 +71,7 @@ function c()
     catch (err){}
     try {
         password2 = check.password2;
+        passwordError = check.password2Error;
     }
     catch(err){}
     try {
@@ -79,7 +82,7 @@ function c()
     buttonDisabled(true);
     checkEmail();
     checkPassword1();
-    if (password2 !== null) {
+    if (password2) {
         checkPassword2();
     }
     checkSend(check.button);
@@ -87,7 +90,7 @@ function c()
     function checkSend(input)
     {
         document.addEventListener('click',function() {
-            if (check.password2) {
+            if (password2) {
                 input.onclick = clickSend;
             }
             else {
@@ -116,18 +119,27 @@ function c()
             check.buttonError.innerText = check.passwordLengthMessage || defaultPasswordLengthError;
         }
         else {
-            if (check.checkbox !== null){
-                if (checkbox.checked === false){
+            if (password2){
+                if (check.password !== password2){
+                    check.buttonError.innerText = check.passwordsUnmatchMessage || defaultUnmatchError;
+                }
+            }
+            if (checkbox){
+                try {
+                    checked = checkbox.checked;
+                }
+                catch (err){}
+                if (!checked){
                     check.buttonError.innerText = check.checkboxMessage || defaultCheckboxMess;
                 }
                 else {
                     check.buttonError.innerText = buttonErrorOld;
-                    check.callbackSend(check.email.value, check.password.value, check.password2.value);
+                    check.callbackSend(check.email.value, check.password.value, password2.value);
                 }
             }
             else {
                 check.buttonError.innerText = buttonErrorOld;
-                check.callbackSend(check.email.value, check.password.value, check.password2.value);
+                check.callbackSend(check.email.value, check.password.value, password2.value);
             }
         }
     }
@@ -160,13 +172,12 @@ function c()
     }
 
     function checkPassword2() {
-        let input = check.password2,
-            error = check.password2Error,
+        let input = password2,
             message = check.passwordErrorMessage  || defaultPasswordError,
             preg = /\w+/,
             messageIfEmpty = check.passwordErrorMessageIfEmpty  || defaultEmptyPassword;
 
-        listener(input, error, preg, message, messageIfEmpty, password2ErrorOld, 2);
+        listener(input, passwordError, preg, message, messageIfEmpty, password2ErrorOld, 2);
         inputer(input);
     }
     function inputer(input)
@@ -183,8 +194,8 @@ function c()
             if (check.email.value.match(pregEmail)) {
                 if (check.passwordError.innerText === passwordErrorOld) {
                     if (check.password.value.length >= check.minPasswordLength) {
-                        if (check.password2 !== null) {
-                            if (check.password.value === check.password2.value) {
+                        if (password2) {
+                            if (check.password.value === password2.value) {
                                 buttonDisabled(false);
                                 check.buttonError.innerText = buttonErrorOld;
                             }
